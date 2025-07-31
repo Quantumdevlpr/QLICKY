@@ -10,6 +10,12 @@ interface QRCodeDisplayProps {
   fgColor?: string;  // Foreground color of QR code modules
   bgColor?: string;  // Background color of the QR code
   pattern: PatternType; // The selected pattern from PatternSelector
+  imageSettings?: {
+    src: string;
+    height?: number;
+    width?: number;
+    excavate?: boolean;
+  } | null;
   // You can add more props here if you want to control other qr-code-styling options
   // e.g., cornerColor, image for logo, etc.
 }
@@ -28,11 +34,11 @@ const qrCodeInstance = new QRCodeStyling({
   backgroundOptions: {
     color: '#FFFFFF',
   },
-  cornerSquareOptions: { // Options for the large corner squares (finder patterns)
+  cornersSquareOptions: { // Options for the large corner squares (finder patterns)
     color: '#000000',
     type: 'square',
   },
-  cornerDotOptions: { // Options for the small dots inside the corner squares
+  cornersDotOptions: { // Options for the small dots inside the corner squares
     color: '#000000',
     type: 'square',
   },
@@ -44,6 +50,7 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   fgColor = '#000000',
   bgColor = '#FFFFFF',
   pattern,
+  imageSettings,
 }) => {
   // Create a ref to attach to the HTML element where the QR code will be drawn
   const ref = useRef<HTMLDivElement>(null);
@@ -96,6 +103,16 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
         cornerDotShape = 'square';
     }
 
+    // Prepare image options if logo is provided
+    const imageOptions = imageSettings?.src ? {
+      image: imageSettings.src,
+      imageOptions: {
+        hideBackgroundDots: imageSettings.excavate ?? true,
+        imageSize: Math.min((imageSettings.width ?? 40) / size, (imageSettings.height ?? 40) / size, 0.4),
+        margin: 0,
+      }
+    } : {};
+
     // Update the QR code instance with the new options
     qrCodeInstance.update({
       width: size,
@@ -108,19 +125,17 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
       backgroundOptions: {
         color: bgColor,
       },
-      cornerSquareOptions: {
+      cornersSquareOptions: {
         color: fgColor,
         type: cornerSquareShape, // Apply the corner square shape
       },
-      cornerDotOptions: {
+      cornersDotOptions: {
         color: fgColor,
         type: cornerDotShape, // Apply the corner dot shape
       },
-      // If you have a logo, you can add image options here as well:
-      // image: 'path/to/your/logo.png',
-      // imageOptions: { hideBackgroundDots: true, imageSize: 0.6, margin: 0 },
+      ...imageOptions, // Spread the image options if logo is provided
     });
-  }, [data, size, fgColor, bgColor, pattern]); // Dependencies: re-run this effect if any of these props change
+  }, [data, size, fgColor, bgColor, pattern, imageSettings]); // Dependencies: re-run this effect if any of these props change
 
   return (
     <div
