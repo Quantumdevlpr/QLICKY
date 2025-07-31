@@ -16,6 +16,7 @@ interface QRCodeDisplayProps {
     width?: number;
     excavate?: boolean;
   } | null;
+  onQRReady?: () => void; // Callback when QR code is ready
   // You can add more props here if you want to control other qr-code-styling options
   // e.g., cornerColor, image for logo, etc.
 }
@@ -51,6 +52,7 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
   bgColor = '#FFFFFF',
   pattern,
   imageSettings,
+  onQRReady,
 }) => {
   // Create a ref to attach to the HTML element where the QR code will be drawn
   const ref = useRef<HTMLDivElement>(null);
@@ -135,7 +137,12 @@ const QRCodeDisplay: React.FC<QRCodeDisplayProps> = ({
       },
       ...imageOptions, // Spread the image options if logo is provided
     });
-  }, [data, size, fgColor, bgColor, pattern, imageSettings]); // Dependencies: re-run this effect if any of these props change
+
+    // Notify that QR code is ready after a short delay to ensure rendering is complete
+    setTimeout(() => {
+      onQRReady?.();
+    }, 100);
+  }, [data, size, fgColor, bgColor, pattern, imageSettings, onQRReady]); // Dependencies: re-run this effect if any of these props change
 
   return (
     <div

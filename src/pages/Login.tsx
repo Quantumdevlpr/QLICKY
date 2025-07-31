@@ -8,6 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { auth, LoginViaEmail, signInWithGoogle } from "../libs/firebaseHelper";
 import { signInUser } from "../libs/storageHelper";
 import { useEffect } from "react";
+import { getToken } from "../libs/storageHelper";
 
 const schema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -16,6 +17,12 @@ type FormData = z.infer<typeof schema>;
 
 export default function Login() {
   const navigate = useNavigate();
+  
+  // Add a simple test to verify the component is mounting
+  useEffect(() => {
+    console.log('Login page mounted');
+  }, []);
+
   const {
     register,
     handleSubmit,
@@ -47,8 +54,8 @@ export default function Login() {
         console.log("Attempting Google login...");
         
         await signInWithGoogle();
+        // Remove the direct navigation here - let the auth state change handle it
         toast.success("Google login successful!");
-        navigate("/dashboard/my-qrcode");
       } catch (err) {
         toast.error((err as Error).message || "Google login failed.");
       }
@@ -57,16 +64,26 @@ export default function Login() {
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user1) => {
+      console.log('Auth state changed:', user1);
       if (user1?.uid) {
         console.log('Login updateUserInfo');
-        signInUser(user1);
-        window.location.href = window.location.origin + "/dashboard/my-qrcode";
+        try {
+          signInUser(user1);
+          console.log('User signed in successfully, navigating to dashboard');
+          // Use navigate instead of window.location.href for better routing
+          navigate("/dashboard/my-qrcode");
+        } catch (error) {
+          console.error('Error during sign in:', error);
+          toast.error('Error during sign in. Please try again.');
+        }
+      } else {
+        console.log('No user found in auth state');
       }
     });
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
@@ -117,6 +134,21 @@ export default function Login() {
         <div className="mt-8 text-center text-gray-600 dark:text-gray-300">
           Don&apos;t have an account?{' '}
           <a href="/signup" className="text-indigo-600 hover:underline dark:text-indigo-400">Sign Up</a>
+        </div>
+        {/* Debug section - remove in production */}
+        <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Debug Info: Login page is working. Firebase auth state will be logged to console.
+          </p>
+          <button 
+            onClick={() => {
+              console.log('Current auth state:', auth.currentUser);
+              console.log('Local storage token:', getToken());
+            }}
+            className="mt-2 text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded"
+          >
+            Check Auth State
+          </button>
         </div>
       </div>
     </div>

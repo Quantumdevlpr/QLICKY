@@ -20,6 +20,7 @@ const Generator = () => {
 
   const { currentQR, updateQRCode, resetQRCode, saveQRCode } = useQRCode();
   const [url, setUrl] = useState(currentQR.value);
+  const [isQRReady, setIsQRReady] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
 
   const handleURLChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,38 +30,27 @@ const Generator = () => {
   const handleURLSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateQRCode({ value: url });
+    setIsQRReady(false); // Reset QR ready state when data changes
   };
 
   const downloadQRCode = (format: 'svg' | 'png') => {
-    if (!qrRef.current) return;
+    if (!qrRef.current) {
+      console.error('QR code reference not found');
+      return;
+    }
 
-    const svg = qrRef.current.querySelector('svg');
-    if (!svg) return;
+    // For QRCodeDisplay component, we need to get the canvas element
+    const canvas = qrRef.current.querySelector('canvas');
+    if (!canvas) {
+      console.error('Canvas element not found. Please wait for the QR code to load.');
+      // Show a user-friendly error message
+      alert('QR code is still loading. Please wait a moment and try again.');
+      return;
+    }
 
-    if (format === 'svg') {
-      const svgData = new XMLSerializer().serializeToString(svg);
-      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      const svgUrl = URL.createObjectURL(svgBlob);
-      const downloadLink = document.createElement('a');
-      downloadLink.href = svgUrl;
-      downloadLink.download = 'qrcode.svg';
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      URL.revokeObjectURL(svgUrl);
-    } else if (format === 'png') {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      const svgData = new XMLSerializer().serializeToString(svg);
-      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-      const svgUrl = URL.createObjectURL(svgBlob);
-
-      img.onload = () => {
-        canvas.width = currentQR.size;
-        canvas.height = currentQR.size;
-        ctx?.drawImage(img, 0, 0);
-
+    try {
+      if (format === 'png') {
+        // For PNG, we can directly download the canvas
         const pngUrl = canvas.toDataURL('image/png');
         const downloadLink = document.createElement('a');
         downloadLink.href = pngUrl;
@@ -68,10 +58,40 @@ const Generator = () => {
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(svgUrl);
-      };
+      } else if (format === 'svg') {
+        // For SVG, we need to convert canvas to SVG or use a different approach
+        // Since qr-code-styling primarily uses canvas, we'll create an SVG from the canvas
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          console.error('Could not get canvas context');
+          return;
+        }
 
-      img.src = svgUrl;
+        // Create a temporary canvas to convert to SVG
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = canvas.width;
+        tempCanvas.height = canvas.height;
+        tempCtx?.drawImage(canvas, 0, 0);
+
+        // Convert canvas to SVG-like data URL (this is a workaround)
+        const svgData = `<svg width="${canvas.width}" height="${canvas.height}" xmlns="http://www.w3.org/2000/svg">
+          <image href="${tempCanvas.toDataURL()}" width="${canvas.width}" height="${canvas.height}"/>
+        </svg>`;
+        
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        const downloadLink = document.createElement('a');
+        downloadLink.href = svgUrl;
+        downloadLink.download = 'qrcode.svg';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(svgUrl);
+      }
+    } catch (error) {
+      console.error('Error downloading QR code:', error);
+      alert('Failed to download QR code. Please try again.');
     }
   };
 
@@ -93,6 +113,7 @@ const Generator = () => {
               bgColor={currentQR.bgColor}
               pattern={currentQR.pattern || 'squares'}
               imageSettings={currentQR.imageSettings}
+              onQRReady={() => setIsQRReady(true)}
             />
           </div>
           <div className="mt-6 w-full">
@@ -115,6 +136,7 @@ const Generator = () => {
               <button
                 onClick={() => downloadQRCode('svg')}
                 className="btn btn-outline flex items-center gap-2"
+                disabled={!isQRReady}
               >
                 <Download className="h-4 w-4" />
                 Download SVG
@@ -122,6 +144,7 @@ const Generator = () => {
               <button
                 onClick={() => downloadQRCode('png')}
                 className="btn btn-outline flex items-center gap-2"
+                disabled={!isQRReady}
               >
                 <Download className="h-4 w-4" />
                 Download PNG
@@ -129,6 +152,7 @@ const Generator = () => {
               <button
                 onClick={saveQRCode}
                 className="btn btn-secondary flex items-center gap-2"
+                disabled={!isQRReady}
               >
                 <Save className="h-4 w-4" />
                 Save QR Code
