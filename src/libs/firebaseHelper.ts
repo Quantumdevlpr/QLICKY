@@ -151,7 +151,8 @@ export const signInWithGoogle = async (): Promise<any> => {
     //const email = error.email;
     // The AuthCredential type that was used.
     //const credential = GoogleAuthProvider.credentialFromError(error as any);
-     alert(errorCode + ': ' + errorMessage);
+    console.error("Google sign in error:", errorCode, errorMessage);
+    throw new Error(`${errorCode}: ${errorMessage}`);
   }
 };
 

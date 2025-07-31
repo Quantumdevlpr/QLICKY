@@ -17,14 +17,14 @@ const Home = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
             <button 
-              onClick={() => navigate('/generator')} 
+              onClick={() => navigate('/login')} 
               className="btn btn-primary text-base flex items-center justify-center gap-2"
             >
               <QrCode className="h-5 w-5" />
-              Create QR Code
+              Get Started
             </button>
             <button 
-              onClick={() => navigate('/analytics')} 
+              onClick={() => navigate('/login')} 
               className="btn btn-outline text-base flex items-center justify-center gap-2"
             >
               <BarChart3 className="h-5 w-5" />
@@ -83,7 +83,7 @@ const Home = () => {
                 Start creating beautiful, customized QR codes that not only look great but also provide valuable insights into your audience.
               </p>
               <button 
-                onClick={() => navigate('/generator')} 
+                onClick={() => navigate('/login')} 
                 className="btn btn-primary text-base mt-4"
               >
                 Get Started Now
