@@ -5,6 +5,10 @@ interface PatternSelectorProps {
   onChange: (pattern: PatternType) => void;
 }
 
+const handlePatternChange = (pattern: PatternType) => {
+  setSelectedPattern(pattern);
+  console.log('Pattern selected in Generator:', pattern); // Good for debugging
+};
 const PatternSelector = ({ selectedPattern, onChange }: PatternSelectorProps) => {
   const patterns: { id: PatternType; name: string }[] = [
     { id: 'squares', name: 'Squares (Default)' },

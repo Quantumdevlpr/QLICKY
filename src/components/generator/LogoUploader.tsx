@@ -78,8 +78,8 @@ const LogoUploader = ({ imageSettings, onChange }: LogoUploaderProps) => {
               <label className="block text-sm font-medium text-gray-700 mb-1">Logo Size</label>
               <input
                 type="range"
-                min="20"
-                max="60"
+                min="10"
+                max="40"
                 value={logoSize}
                 onChange={handleSizeChange}
                 className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary-500"

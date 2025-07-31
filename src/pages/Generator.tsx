@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getToken } from '../libs/storageHelper';
-import QRCode  from 'qrcode.react';
+import QRCodeDisplay from '../components/generator/QRCodeDisplay';
 import { Download, RefreshCcw, Save } from 'lucide-react';
 import { useQRCode } from '../contexts/QRCodeContext';
 import ColorPicker from '../components/generator/ColorPicker';
@@ -86,26 +86,12 @@ const Generator = () => {
             className="p-4 rounded-lg border border-gray-200 bg-white shadow-inner"
             style={{ backgroundColor: currentQR.bgColor }}
           >
-            <QRCode
-              value={currentQR.value}
+            <QRCodeDisplay
+              data={currentQR.value}
               size={currentQR.size}
               fgColor={currentQR.fgColor}
               bgColor={currentQR.bgColor}
-              level={currentQR.level}
-              includeMargin={currentQR.includeMargin}
-              renderAs={currentQR.imageSettings?.src ? 'canvas' : currentQR.renderAs}
-              {...(
-                currentQR.imageSettings?.src
-                  ? {
-                      imageSettings: {
-                        src: currentQR.imageSettings.src,
-                        height: currentQR.imageSettings.height ?? 40,
-                        width: currentQR.imageSettings.width ?? 40,
-                        excavate: currentQR.imageSettings.excavate ?? true,
-                      }
-                    }
-                  : {}
-              )}
+              pattern={currentQR.pattern || 'squares'}
             />
           </div>
           <div className="mt-6 w-full">
