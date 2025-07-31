@@ -92,6 +92,7 @@ const Generator = () => {
               fgColor={currentQR.fgColor}
               bgColor={currentQR.bgColor}
               pattern={currentQR.pattern || 'squares'}
+              imageSettings={currentQR.imageSettings}
             />
           </div>
           <div className="mt-6 w-full">
