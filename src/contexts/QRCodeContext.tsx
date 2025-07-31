@@ -23,6 +23,7 @@ interface QRCodeContextType {
   updateQRCode: (updates: Partial<QRCodeProps>) => void;
   resetQRCode: () => void;
   saveQRCode: () => void;
+  deleteQRCode: (id: string) => void;
   getQRCodeAnalytics: (id: string) => AnalyticsData | null;
 }
 
@@ -74,6 +75,11 @@ export function QRCodeProvider({ children }: { children: React.ReactNode }) {
     setAnalyticsData(mockAnalytics);
   };
 
+  const deleteQRCode = (id: string) => {
+    setQRHistory((prev) => prev.filter((qr) => qr.id !== id));
+    setAnalyticsData(null); // Clear analytics for deleted QR code
+  };
+
   const getQRCodeAnalytics = (id: string) => {
     return generateMockAnalytics(id);
   };
@@ -87,6 +93,7 @@ export function QRCodeProvider({ children }: { children: React.ReactNode }) {
         updateQRCode,
         resetQRCode,
         saveQRCode,
+        deleteQRCode,
         getQRCodeAnalytics,
       }}
     >
